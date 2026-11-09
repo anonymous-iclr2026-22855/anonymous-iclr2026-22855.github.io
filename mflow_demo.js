@@ -256,8 +256,9 @@
       "<span>black = <i>x</i><sub>0</sub>-pred</span><span class=\"md-scale-bar\"></span><span>white = <i>u</i>-pred</span>");
 
     el("p", "md-note", card,
-      "Same image and noise as the figure above. PCs 11\u2013768 are edited in groups; the MFlow preset is the " +
-      "learned MFlow-H/16 + LPIPS curve on ImageNet-256 (tail groups set to their mean). Images use per-image min\u2013max.");
+      "Same image and noise as Fig. 2 in the paper. PCs 11\u2013768 are edited in groups. The MFlow preset is the " +
+      "learned MFlow-H/16 + LPIPS curve on ImageNet-256 (tail groups set to their rounded mean, hence " +
+      "r<sub>eff</sub> = 3.32 here vs. 3.33 for the full curve). Images use per-image min\u2013max.");
 
     // static images
     var x0Img = pX0.ctx.createImageData(W, H);
