@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image comparison</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #212529; padding: 12px; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .ba-body { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 14px; align-items: stretch; }
+  .ba-main { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .ba-stage { position: relative; margin: 0 auto; overflow: hidden; border-radius: 6px; background: #111; user-select: none; touch-action: none; aspect-ratio: 640 / 416; max-width: 640px; width: 100%; --pos: 50%; cursor: grab; }
+  .ba-stage.is-dragging { cursor: grabbing; }
+  .ba-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ba-stage .ba-left { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  .ba-tag { position: absolute; top: 10px; padding: 3px 12px; border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; font-size: .95rem; font-weight: 700; pointer-events: none; }
+  .ba-tag.left { left: 10px; } .ba-tag.right { right: 10px; }
+  .ba-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+  .ba-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff; pointer-events: none; }
+  .ba-knob { position: absolute; top: var(--ky, 50%); left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 2px solid #fff; border-radius: 50%; background: rgba(0,0,0,.45); color: #fff; font-size: 1.1rem; line-height: 40px; text-align: center; }
+  .ba-loupe { display: grid; grid-template-rows: 1fr 1fr; gap: 8px; min-width: 0; }
+  .ba-pane { position: relative; min-height: 0; border-radius: 6px; overflow: hidden; background: #111; }
+  .ba-pane img { position: absolute; left: 0; top: 0; max-width: none; display: block; pointer-events: none; }
+  .ba-pane .ba-tag { top: 8px; left: 8px; font-size: .85rem; padding: 2px 10px; }
+  .hint { text-align: center; font-size: .85rem; color: #6c757d; margin: 10px 0 0; }
+  .zoomctl { text-align: center; font-size: .85rem; color: #6c757d; margin-top: 6px; }
+  .zoomctl button { font: inherit; padding: 2px 10px; margin: 0 2px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; cursor: pointer; }
+  .zoomctl button.active { background: #212529; color: #fff; border-color: #212529; }
+  .err { padding: 2rem; text-align: center; color: #6c757d; }
+  .list { font-size: .9rem; }
+  .list table { border-collapse: collapse; }
+  .list td, .list th { border: 1px solid #dee2e6; padding: 4px 10px; }
+  @media (max-width: 760px) {
+    .ba-body { grid-template-columns: 1fr; }
+    .ba-loupe { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .ba-pane { aspect-ratio: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+(function () {
+  // Pair codes available in images/ as no-<code>.jpg (without refiner) and yes-<code>.jpg (with refiner).
+  var CODES = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+  // Opening focus per code (fraction of width/height): the window where the two versions differ most.
+  var FOCUS = { 0:[0.744,0.856], 1:[0.444,0.663], 3:[0.819,0.817], 4:[0.581,0.529], 5:[0.819,0.24], 6:[0.156,0.779],
+                7:[0.396,0.884], 8:[0.881,0.856], 9:[0.531,0.413], 10:[0.844,0.875], 11:[0.634,0.552], 12:[0.894,0.144],
+                13:[0.756,0.875], 14:[0.519,0.279] };
+  var FOLDER = "images/";
+
+  var q = new URLSearchParams(location.search);
+  var app = document.getElementById("app");
+  var id = q.get("id");
+  var flip = /^(1|true|yes)$/i.test(q.get("flip") || "");
+  var zoom = Math.max(1, Math.min(4, parseFloat(q.get("zoom")) || 2));
+  var showLabels = !/^(0|false|no)$/i.test(q.get("labels") || "");
+
+  // No id: list every URL so the study designer can copy them.
+  if (id === null) {
+    var base = location.href.split("?")[0];
+    var h = '<div class="list"><p>Pass <code>?id=&lt;code&gt;&amp;flip=0|1</code>. ' +
+            '<code>flip=0</code>: A = without, B = with. <code>flip=1</code>: A = with, B = without. ' +
+            'Optional <code>&amp;zoom=2</code> (1&ndash;4), <code>&amp;labels=0</code> to hide A/B tags.</p><table><tr><th>id</th><th>flip=0</th><th>flip=1</th></tr>';
+    CODES.forEach(function (c) {
+      h += '<tr><td>' + c + '</td><td><a href="?id=' + c + '&flip=0">' + base + '?id=' + c + '&amp;flip=0</a></td>' +
+           '<td><a href="?id=' + c + '&flip=1">' + base + '?id=' + c + '&amp;flip=1</a></td></tr>';
+    });
+    app.innerHTML = h + '</table></div>';
+    return;
+  }
+  id = parseInt(id, 10);
+  if (CODES.indexOf(id) < 0) { app.innerHTML = '<p class="err">Unknown image id.</p>'; return; }
+
+  // flip=0: left/A = without, right/B = with.  flip=1: left/A = with, right/B = without.
+  var leftSrc  = FOLDER + (flip ? "yes-" : "no-")  + id + ".jpg";
+  var rightSrc = FOLDER + (flip ? "no-"  : "yes-") + id + ".jpg";
+
+  app.innerHTML =
+    '<div class="ba-body">' +
+      '<div class="ba-main"><div class="ba-stage" id="stage">' +
+        '<img class="ba-right" id="imgR" alt="">' +
+        '<img class="ba-left" id="imgL" alt="">' +
+        (showLabels ? '<span class="ba-tag left">A</span><span class="ba-tag right">B</span>' : '') +
+        '<input class="ba-range" id="range" type="range" min="0" max="100" value="50" step="0.5" aria-label="Divider position">' +
+        '<div class="ba-line"><span class="ba-knob">&#8596;</span></div>' +
+      '</div></div>' +
+      '<div class="ba-loupe">' +
+        '<div class="ba-pane"><img id="zoomL" alt="">' + (showLabels ? '<span class="ba-tag">A</span>' : '') + '</div>' +
+        '<div class="ba-pane"><img id="zoomR" alt="">' + (showLabels ? '<span class="ba-tag">B</span>' : '') + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<p class="hint">Click or drag on the image to move the divider. The two panes show the same region of A and B magnified.</p>' +
+    '<div class="zoomctl">Zoom: <button data-z="1">1&times;</button><button data-z="2">2&times;</button><button data-z="3">3&times;</button><button data-z="4">4&times;</button></div>';
+
+  var stage = document.getElementById("stage"), imgL = document.getElementById("imgL"), imgR = document.getElementById("imgR");
+  var range = document.getElementById("range"), zL = document.getElementById("zoomL"), zR = document.getElementById("zoomR");
+  var cx = null, cy = null, loaded = 0;
+
+  function paneSize() { var r = zL.parentNode.getBoundingClientRect(); return { w: Math.max(1, r.width), h: Math.max(1, r.height) }; }
+  function srcRect() {
+    var nw = imgR.naturalWidth, nh = imgR.naturalHeight, ps = paneSize();
+    var sw = Math.min(nw, ps.w / zoom), sh = Math.min(nh, ps.h / zoom);
+    var x = Math.min(Math.max(cx - sw / 2, 0), nw - sw), y = Math.min(Math.max(cy - sh / 2, 0), nh - sh);
+    return { x: x, y: y, w: sw, h: sh, nw: nw, nh: nh };
+  }
+  function drawPane(el, src, r) {
+    var b = el.parentNode.getBoundingClientRect(), k = b.width / r.w;
+    if (el.getAttribute("src") !== src) el.src = src;
+    el.style.width = (r.nw * k) + "px"; el.style.height = (r.nh * k) + "px";
+    el.style.left = (-r.x * k) + "px"; el.style.top = (-r.y * k) + "px";
+  }
+  function render() {
+    if (loaded < 2 || cx === null || !imgR.naturalWidth) return;
+    var r = srcRect();
+    drawPane(zL, leftSrc, r); drawPane(zR, rightSrc, r);
+    var px = Math.min(100, Math.max(0, cx / r.nw * 100)), py = Math.min(100, Math.max(0, cy / r.nh * 100));
+    stage.style.setProperty("--pos", px + "%"); stage.style.setProperty("--ky", py + "%");
+    range.value = px;
+  }
+  function onLoad() {
+    loaded++;
+    if (loaded === 2) {
+      stage.style.aspectRatio = imgR.naturalWidth + " / " + imgR.naturalHeight;
+      stage.style.maxWidth = imgR.naturalWidth + "px";
+      var f = FOCUS[id] || [0.5, 0.5];
+      cx = f[0] * imgR.naturalWidth; cy = f[1] * imgR.naturalHeight;
+      render();
+    }
+  }
+  imgL.addEventListener("load", onLoad); imgR.addEventListener("load", onLoad);
+  imgL.src = leftSrc; imgR.src = rightSrc;
+
+  function moveTo(e) {
+    var b = stage.getBoundingClientRect();
+    if (!imgR.naturalWidth || !b.width) return;
+    cx = (e.clientX - b.left) / b.width * imgR.naturalWidth;
+    cy = (e.clientY - b.top) / b.height * imgR.naturalHeight;
+    render();
+  }
+  var dragId = null;
+  stage.addEventListener("pointerdown", function (e) { if (e.button !== 0) return; dragId = e.pointerId; stage.classList.add("is-dragging"); moveTo(e); });
+  stage.addEventListener("pointermove", function (e) { if (e.pointerId === dragId && (e.buttons & 1 || e.pointerType !== "mouse")) moveTo(e); });
+  function endDrag(e) { if (e.pointerId !== dragId) return; dragId = null; stage.classList.remove("is-dragging"); }
+  window.addEventListener("pointerup", endDrag); window.addEventListener("pointercancel", endDrag);
+  if ("ResizeObserver" in window) new ResizeObserver(render).observe(zL.parentNode); else window.addEventListener("resize", render);
+  range.addEventListener("input", function () {
+    stage.style.setProperty("--pos", range.value + "%");
+    if (imgR.naturalWidth) { cx = range.value / 100 * imgR.naturalWidth; if (cy === null) cy = imgR.naturalHeight / 2; render(); }
+  });
+
+  var zb = app.querySelectorAll(".zoomctl button");
+  function setZoom(z) { zoom = z; zb.forEach(function (b) { b.classList.toggle("active", +b.dataset.z === z); }); render(); }
+  zb.forEach(function (b) { b.addEventListener("click", function () { setZoom(+b.dataset.z); }); });
+  setZoom(zoom);
+})();
+</script>
+</body>
+</html>
