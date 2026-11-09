@@ -1,21 +1,298 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Supplementary Results</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supplementary Results: Submission 22855</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="mflow_demo.css">
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; max-width: 960px; margin: 60px auto; padding: 0 20px 80px; color: #212529; line-height: 1.5; }
+  h1 { font-size: 1.9rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin: 3rem 0 .75rem; padding-top: 1.25rem; border-top: 1px solid #ddd; }
+  h2 .num { color: #6c757d; font-weight: normal; margin-right: .4em; }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; }
+  p { margin: .5rem 0 .9rem; }
+  .muted { color: #6c757d; font-size: .92rem; }
+  .toc { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; margin: 1.5rem 0 2rem; }
+  .toc ol { margin: .4rem 0 0; padding-left: 1.3em; }
+  .toc li { margin: .2rem 0; }
+  a { color: #0b5ed7; }
+  figure { margin: 1rem 0 1.5rem; }
+  figure img { width: 100%; height: auto; display: block; border-radius: 4px; }
+  figcaption { font-size: .9rem; color: #555; margin-top: .5rem; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+  @media (max-width: 760px) { .side { grid-template-columns: 1fr; } }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+  th, td { border: 1px solid #dee2e6; padding: 6px 10px; text-align: left; }
+  th { background: #f1f3f5; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.neg { color: #c92a2a; }
+  td.pos { color: #2b8a3e; }
+  .anchor { color: #adb5bd; text-decoration: none; font-size: .85em; margin-left: .35em; opacity: 0; }
+  h2:hover .anchor, h3:hover .anchor { opacity: 1; }
+
+  /* ---------- Before/after comparison (from the project page) ---------- */
+  .cmp-card { padding: 16px; margin: .75rem 0 1.75rem; background: #fff; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,.18); outline: none; }
+  .cmp-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
+  .cmp-btn { flex: none; width: 36px; height: 36px; border: none; border-radius: 50%; background: #ddd; color: #212529; font-size: 1.4rem; line-height: 1; cursor: pointer; opacity: .9; }
+  .cmp-btn:hover { opacity: 1; background: #ccc; }
+  .cmp-dots { display: flex; justify-content: center; gap: 8px; margin-top: 0; flex-wrap: wrap; }
+  .cmp-dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 50%; background: #ccc; cursor: pointer; }
+  .cmp-dot.active { background: #212529; }
+  .ba-stage { position: relative; margin: 0 auto; overflow: hidden; border-radius: 6px; background: #111; user-select: none; aspect-ratio: 640 / 416; max-width: 640px; width: 100%; --pos: 50%; }
+  .ba-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ba-stage .ba-before { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  .ba-tag { position: absolute; top: 10px; padding: 3px 10px; border-radius: 6px; background: rgba(0,0,0,.55); color: #fff; font-size: .8rem; font-weight: 600; pointer-events: none; }
+  .ba-tag.left { left: 10px; } .ba-tag.right { right: 10px; }
+  .ba-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff; pointer-events: none; }
+  .ba-knob { position: absolute; top: var(--ky, 50%); left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 2px solid #fff; border-radius: 50%; background: rgba(0,0,0,.45); color: #fff; font-size: 1.1rem; line-height: 40px; text-align: center; }
+  .ba-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+  .ba-range:focus-visible + .ba-line .ba-knob { box-shadow: 0 0 0 3px #007bff; }
+  .ba-count { text-align: center; font-size: .85rem; color: #6b6b6b; margin-top: 6px; }
+  .ba-body { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 14px; align-items: stretch; }
+  .ba-main { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .ba-main .ba-stage, .ba-main .ba-range { cursor: grab; }
+  .ba-main .ba-stage.is-dragging, .ba-main .ba-stage.is-dragging .ba-range { cursor: grabbing; }
+  .ba-loupe { display: grid; grid-template-rows: 1fr 1fr; gap: 8px; min-width: 0; }
+  .ba-pane { position: relative; min-height: 0; border-radius: 6px; overflow: hidden; background: #111; }
+  .ba-pane img { position: absolute; left: 0; top: 0; max-width: none; display: block; pointer-events: none; }
+  .ba-pane .ba-tag { top: 8px; left: 8px; font-size: .75rem; padding: 2px 8px; }
+  .ba-pane.is-with .ba-tag { background: rgba(0,123,255,.85); }
+  .ba-hint { text-align: center; font-size: .8rem; color: #868e96; margin-top: 4px; }
+  @media (max-width: 760px) {
+    .ba-body { grid-template-columns: 1fr; }
+    .ba-loupe { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .ba-pane { aspect-ratio: 1; }
+  }
+  @media (max-width: 600px) { #ba-card { padding: 10px; } }
+</style>
 </head>
-<body style="font-family:Arial; max-width:900px;
-             margin:60px auto; padding:20px;">
+<body>
 
-  <h1>Additional Experimental Results</h1>
+<h1>Additional Experimental Results</h1>
+<p class="muted">Anonymous supplementary material for peer review, ICLR 2027 Submission 22855.</p>
 
-  <p>Anonymous supplementary material
-     for peer review.</p>
+<div class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#sec1">Capacity shift in learned m-curves: B/16 vs. H/16</a></li>
+    <li><a href="#sec2">Learned m-curves beyond the first 30 directions</a></li>
+    <li><a href="#sec3">Interactive: dial the MFlow gains</a></li>
+    <li><a href="#sec4">ConvRefiner: radial power spectrum at 512px</a></li>
+    <li><a href="#sec5">Interactive: ConvRefiner before / after comparison</a></li>
+  </ol>
+</div>
 
-  <h2>Image Comparisons</h2>
-  <p>Results will be added here.</p>
+<!-- ============================================================ -->
+<h2 id="sec1"><span class="num">&sect;1</span>Capacity shift in learned m-curves: B/16 vs. H/16<a class="anchor" href="#sec1">#</a></h2>
+<p>Learned MFlow gains $m_i$ for B/16 vs. H/16, same recipe (ImageNet-256 + LPIPS). The larger model keeps slightly more velocity-like gain: $r_{\text{eff}}$ 3.15 &rarr; 3.33.</p>
+<figure>
+  <img src="assets/figures/curve_mflow_gains_B_vs_H_lpips.png" alt="Learned MFlow gains for B/16 vs H/16 on ImageNet-256 with LPIPS: top 30 directions and all 768 directions">
+  <figcaption><strong>Fig. 1.</strong> MFlow-B/16 ($r_{\text{eff}}=3.15$) vs. MFlow-H/16 ($r_{\text{eff}}=3.33$). Only capacity differs.</figcaption>
+</figure>
 
+<!-- ============================================================ -->
+<h2 id="sec2"><span class="num">&sect;2</span>Learned m-curves beyond the first 30 directions<a class="anchor" href="#sec2">#</a></h2>
+<p>The paper plots the first 30 directions. Here are all 768 (1024 for RAEv2). Beyond the head the gains are flat at zero, except RAEv2 where they are near zero everywhere.</p>
+<figure>
+  <img src="assets/figures/curve_mflow_gains_paper_alldirs.png" alt="Learned MFlow gains over all PCA directions (linear axis) for MFlow-H, Video MFlow-L, RAEv2 MFlow and T2I MFlow">
+  <figcaption><strong>Fig. 2a.</strong> All directions, linear axis.</figcaption>
+</figure>
+<figure>
+  <img src="assets/figures/curve_mflow_gains_paper_alldirs_logx.png" alt="Learned MFlow gains over all PCA directions (log axis) for the same four models">
+  <figcaption><strong>Fig. 2b.</strong> Same curves, log axis.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="sec3"><span class="num">&sect;3</span>Interactive: dial the MFlow gains<a class="anchor" href="#sec3">#</a></h2>
+<p>Interactive version of Fig. 2 from the paper for better understanding. Pick a preset or drag the gains $m_i$ and watch the target $u_G = x_0 - M\epsilon$ change. The MFlow preset is the learned MFlow-H/16 + LPIPS curve.</p>
+<div class="md-card" id="md-card" aria-label="Interactive MFlow gain curve playground">
+  <p class="md-wait">Loading interactive demo&hellip;</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec4"><span class="num">&sect;4</span>ConvRefiner: radial power spectrum at 512px<a class="anchor" href="#sec4">#</a></h2>
+<p>512px text-to-image, MFlow-XXL/16. Without the refiner the spectrum falls &minus;2.53&nbsp;dB below real images in the 0.5&ndash;0.7 band. With it every band is within 1&nbsp;dB.</p>
+<div class="side">
+  <figure style="margin:0;">
+    <img src="assets/figures/t2i_radial_spectrum.png" alt="Radial power spectrum at 512px: real, before and after ConvRefiner">
+    <figcaption><strong>Fig. 3.</strong> Radial power spectrum (luminance) of real images vs. MFlow-XXL/16 samples before and after ConvRefiner. Shaded: 0.5&ndash;0.7 band.</figcaption>
+  </figure>
+  <div>
+    <table>
+      <thead>
+        <tr><th>Band (normalized radial frequency)</th><th class="num">w/o ConvRefiner</th><th class="num">w/ ConvRefiner</th><th class="num">Change</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>low (&lt; 0.125)</td><td class="num">+0.71</td><td class="num">+0.87</td><td class="num">+0.16</td></tr>
+        <tr><td>mid (0.125&ndash;0.25)</td><td class="num">+0.27</td><td class="num">+0.84</td><td class="num">+0.57</td></tr>
+        <tr><td>high (0.25&ndash;0.5)</td><td class="num neg">&minus;0.70</td><td class="num">+0.62</td><td class="num pos">+1.33</td></tr>
+        <tr><td>&gt; 0.5 (shaded band)</td><td class="num neg">&minus;2.53</td><td class="num">+0.39</td><td class="num pos">+2.91</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:.6rem;"><strong>Table 1.</strong> Mean deviation from the real-image spectrum per band (dB). Positive means more power than real images.</p>
+  </div>
+</div>
+<figure style="max-width: 640px;">
+  <img src="assets/figures/t2i_convrefiner_crops.png" alt="512px text-to-image crop without and with ConvRefiner">
+  <figcaption><strong>Fig. 4.</strong> 512px sample without (left) and with (right) ConvRefiner, zoomed on the leaf texture.</figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="sec5"><span class="num">&sect;5</span>Interactive: ConvRefiner before / after comparison<a class="anchor" href="#sec5">#</a></h2>
+<p>MFlow-XXL/16 text-to-image, without / with ConvRefiner. Click or drag to move the divider. The panes show the same region at 2&times;.</p>
+<div class="cmp-card" id="ba-card" tabindex="0" aria-label="ConvRefiner before and after comparison">
+  <div class="ba-body">
+    <div class="ba-main">
+      <div class="ba-stage">
+        <img class="ba-after" alt="With ConvRefiner">
+        <img class="ba-before" alt="Without ConvRefiner">
+        <span class="ba-tag left">Without ConvRefiner</span>
+        <span class="ba-tag right">With ConvRefiner</span>
+        <input class="ba-range" type="range" min="0" max="100" value="50" step="0.5" aria-label="Slide to compare">
+        <div class="ba-line"><span class="ba-knob">&#8596;</span></div>
+      </div>
+    </div>
+    <div class="ba-loupe">
+      <div class="ba-pane"><img class="ba-zoom-no" alt=""><span class="ba-tag">Without</span></div>
+      <div class="ba-pane is-with"><img class="ba-zoom-yes" alt=""><span class="ba-tag">With</span></div>
+    </div>
+  </div>
+  <div class="cmp-nav">
+    <button type="button" class="cmp-btn" data-step="-1" aria-label="Previous example">&#8249;</button>
+    <div class="cmp-dots"></div>
+    <button type="button" class="cmp-btn" data-step="1" aria-label="Next example">&#8250;</button>
+  </div>
+  <div class="ba-count" aria-live="polite"></div>
+</div>
+
+<script>
+(function () {
+  var card = document.getElementById("ba-card");
+  var EXAMPLES = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+  // Precomputed opening focus per example (fraction of width/height): the window where the refiner adds the most |Laplacian| energy.
+  var FOCUS = [[0.744,0.856],[0.444,0.663],[0.819,0.817],[0.581,0.529],[0.819,0.24],[0.156,0.779],[0.396,0.884],[0.881,0.856],[0.531,0.413],[0.844,0.875],[0.634,0.552],[0.894,0.144],[0.756,0.875],[0.519,0.279]];
+  var N = EXAMPLES.length;
+  var FOLDER = "assets/frequency/";
+  var stage = card.querySelector(".ba-stage");
+  var after = card.querySelector(".ba-after");
+  var before = card.querySelector(".ba-before");
+  var range = card.querySelector(".ba-range");
+  var count = card.querySelector(".ba-count");
+  var dotsWrap = card.querySelector(".cmp-dots");
+  var current = 0;
+
+  after.addEventListener("load", function () {
+    stage.style.aspectRatio = after.naturalWidth + " / " + after.naturalHeight;
+    stage.style.maxWidth = after.naturalWidth + "px";
+  });
+
+  var cvNo = card.querySelector(".ba-zoom-no"), cvYes = card.querySelector(".ba-zoom-yes");
+  var zoom = 2, cx = null, cy = null, loaded = 0;
+
+  function paneSize() { var r = cvNo.parentNode.getBoundingClientRect(); return { w: Math.max(1, r.width), h: Math.max(1, r.height) }; }
+  function srcRect() {
+    var nw = after.naturalWidth, nh = after.naturalHeight, ps = paneSize();
+    var sw = Math.min(nw, ps.w / zoom), sh = Math.min(nh, ps.h / zoom);
+    var x = Math.min(Math.max(cx - sw / 2, 0), nw - sw), y = Math.min(Math.max(cy - sh / 2, 0), nh - sh);
+    return { x: x, y: y, w: sw, h: sh, nw: nw, nh: nh };
+  }
+  function drawPane(el, src, r) {
+    var b = el.parentNode.getBoundingClientRect(), k = b.width / r.w;
+    if (el.src !== src.src) el.src = src.src;
+    el.style.width = (r.nw * k) + "px"; el.style.height = (r.nh * k) + "px";
+    el.style.left = (-r.x * k) + "px"; el.style.top = (-r.y * k) + "px";
+  }
+  function render() {
+    if (loaded < 2 || cx === null || !after.naturalWidth) return;
+    var r = srcRect();
+    drawPane(cvNo, before, r); drawPane(cvYes, after, r);
+    var px = Math.min(100, Math.max(0, cx / r.nw * 100)), py = Math.min(100, Math.max(0, cy / r.nh * 100));
+    stage.style.setProperty("--pos", px + "%"); stage.style.setProperty("--ky", py + "%");
+    range.value = px;
+  }
+  function autoFocus() {
+    var nw = after.naturalWidth, nh = after.naturalHeight;
+    cx = nw / 2; cy = nh / 2;
+    if (FOCUS[current]) { cx = FOCUS[current][0] * nw; cy = FOCUS[current][1] * nh; return; }
+    try {
+      var c = document.createElement("canvas"); c.width = nw; c.height = nh;
+      var g = c.getContext("2d", { willReadFrequently: true });
+      g.drawImage(after, 0, 0); var A = g.getImageData(0, 0, nw, nh).data;
+      g.drawImage(before, 0, 0); var B = g.getImageData(0, 0, nw, nh).data;
+      var ps = paneSize(), bw = Math.round(ps.w / zoom), bh = Math.round(ps.h / zoom), cell = 8;
+      var gw = Math.floor(nw / cell), gh = Math.floor(nh / cell), grid = new Float32Array(gw * gh);
+      function luma(D) { var L = new Float32Array(nw * nh); for (var k = 0; k < nw * nh; k++) L[k] = .299 * D[4*k] + .587 * D[4*k+1] + .114 * D[4*k+2]; return L; }
+      var LA = luma(A), LB = luma(B);
+      for (var y = 1; y < Math.min(gh * cell, nh - 1); y++) for (var x = 1; x < Math.min(gw * cell, nw - 1); x++) {
+        var i = y * nw + x;
+        var la = Math.abs(4 * LA[i] - LA[i-1] - LA[i+1] - LA[i-nw] - LA[i+nw]);
+        var lb = Math.abs(4 * LB[i] - LB[i-1] - LB[i+1] - LB[i-nw] - LB[i+nw]);
+        grid[Math.floor(y / cell) * gw + Math.floor(x / cell)] += la - lb;
+      }
+      var kw = Math.max(1, Math.round(bw / cell)), kh = Math.max(1, Math.round(bh / cell)), best = -1;
+      for (var gy = 0; gy + kh <= gh; gy++) for (var gx = 0; gx + kw <= gw; gx++) {
+        var sum = 0;
+        for (var yy = 0; yy < kh; yy++) for (var xx = 0; xx < kw; xx++) sum += grid[(gy + yy) * gw + gx + xx];
+        if (sum > best) { best = sum; cx = (gx + kw / 2) * cell; cy = (gy + kh / 2) * cell; }
+      }
+    } catch (err) { /* canvas unreadable under file://: keep the centre */ }
+  }
+  function onLoad() { loaded++; if (loaded === 2) { autoFocus(); render(); } }
+  after.addEventListener("load", onLoad); before.addEventListener("load", onLoad);
+
+  function moveTo(e) {
+    var b = stage.getBoundingClientRect();
+    if (!after.naturalWidth || !b.width) return;
+    cx = (e.clientX - b.left) / b.width * after.naturalWidth;
+    cy = (e.clientY - b.top) / b.height * after.naturalHeight;
+    render();
+  }
+  var dragId = null;
+  stage.addEventListener("pointerdown", function (e) { if (e.button !== 0) return; dragId = e.pointerId; stage.classList.add("is-dragging"); moveTo(e); });
+  stage.addEventListener("pointermove", function (e) { if (e.pointerId === dragId && (e.buttons & 1 || e.pointerType !== "mouse")) moveTo(e); });
+  function endDrag(e) { if (e.pointerId !== dragId) return; dragId = null; stage.classList.remove("is-dragging"); }
+  window.addEventListener("pointerup", endDrag); window.addEventListener("pointercancel", endDrag);
+  if ("ResizeObserver" in window) new ResizeObserver(render).observe(cvNo.parentNode); else window.addEventListener("resize", render);
+
+  range.addEventListener("input", function () {
+    stage.style.setProperty("--pos", range.value + "%");
+    if (after.naturalWidth) { cx = range.value / 100 * after.naturalWidth; if (cy === null) cy = after.naturalHeight / 2; render(); }
+  });
+
+  var dots = [];
+  for (var i = 0; i < N; i++) (function (p) {
+    var d = document.createElement("button"); d.type = "button"; d.className = "cmp-dot";
+    d.setAttribute("aria-label", "Example " + (p + 1) + " of " + N);
+    d.addEventListener("click", function () { show(p); });
+    dotsWrap.appendChild(d); dots.push(d);
+  })(i);
+
+  function show(p) {
+    current = (p + N) % N; loaded = 0;
+    after.src = FOLDER + "yes-" + EXAMPLES[current] + ".jpg";
+    before.src = FOLDER + "no-" + EXAMPLES[current] + ".jpg";
+    range.value = 50;
+    stage.style.setProperty("--pos", "50%"); stage.style.setProperty("--ky", "50%");
+    cx = cy = null;
+    count.textContent = (current + 1) + " / " + N;
+    dots.forEach(function (d, i) { d.classList.toggle("active", i === current); });
+    var n = EXAMPLES[(current + 1) % N];
+    new Image().src = FOLDER + "yes-" + n + ".jpg"; new Image().src = FOLDER + "no-" + n + ".jpg";
+  }
+  card.querySelectorAll("[data-step]").forEach(function (b) { b.addEventListener("click", function () { show(current + Number(b.dataset.step)); }); });
+  card.addEventListener("keydown", function (e) {
+    if (e.target === range) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); show(current - 1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); show(current + 1); }
+  });
+  show(0);
+})();
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<script defer src="mflow_demo.js"></script>
 </body>
 </html>
